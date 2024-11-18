@@ -4,7 +4,7 @@ from firebase_admin import credentials, firestore
 from datetime import datetime
 
 # Load Firebase credentials from Streamlit secrets
-firebase_key = st.secrets["firebase_key"]
+firebase_key = dict(st.secrets["firebase_key"])  # Ensure it's converted to a dict
 
 # Initialize Firebase Firestore
 if not firebase_admin._apps:
