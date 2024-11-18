@@ -3,11 +3,21 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 from datetime import datetime
 
+import streamlit as st
+import firebase_admin
+from firebase_admin import credentials, firestore
+
+# Load Firebase credentials from secrets
+firebase_key = st.secrets["firebase_key"]
+
 # Initialize Firebase Firestore
 if not firebase_admin._apps:  # Ensure Firebase is initialized only once
-    cred = credentials.Certificate("dbkey2.json")  # Path to your Firebase service account key
+    cred = credentials.Certificate(firebase_key)
     firebase_admin.initialize_app(cred)
+
 db = firestore.client()
+
+# Rest of your code here
 
 # Load players participating in the current match for a specific week
 def load_match_players(week_number):
