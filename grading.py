@@ -3,9 +3,6 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 from datetime import datetime
 
-import streamlit as st
-import firebase_admin
-from firebase_admin import credentials, firestore
 
 # Load Firebase credentials from secrets
 firebase_key = st.secrets["firebase_key"]
