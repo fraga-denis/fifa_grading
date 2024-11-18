@@ -1,18 +1,20 @@
 import streamlit as st
 import firebase_admin
 from firebase_admin import credentials, firestore
-import pandas as pd
 from datetime import datetime
 
+# Initialize Firebase Firestore
+if not firebase_admin._apps:  # Ensure Firebase is initialized only once
+    cred = credentials.Certificate("dbkey2.json")  # Path to your Firebase service account key
+    firebase_admin.initialize_app(cred)
+db = firestore.client()
 
-
-# Add grading session logic
+# Load players participating in the current match for a specific week
 def load_match_players(week_number):
     matches_ref = db.collection("matches").where("week", "==", week_number)
     match_docs = matches_ref.stream()
     match_players = [doc.to_dict()["player_name"] for doc in match_docs]
 
-    # Load player data for the selected players
     players_ref = db.collection("players")
     players = players_ref.stream()
     player_data = []
@@ -26,12 +28,10 @@ def load_match_players(week_number):
                 "teamwork": player_dict.get("teamwork", 0),
                 "attacking": player_dict.get("attacking", 0),
                 "defending": player_dict.get("defending", 0),
-                "photo": player_dict.get("photo", ""),
             })
-
     return player_data
 
-# Save grades to Firestore
+# Save grades submitted by users
 def save_grades(week_number, grading_data):
     for grade in grading_data:
         db.collection("grades").add({
@@ -43,7 +43,7 @@ def save_grades(week_number, grading_data):
             "defending": grade["defending"]
         })
 
-# Post-match grading session
+# Grading session logic
 def post_match_grading():
     st.header("Post-Match Grading")
 
@@ -65,7 +65,7 @@ def post_match_grading():
         for player in players:
             st.subheader(player["name"])
 
-            # Display numeric inputs for grading
+            # Display grading inputs
             stamina = st.number_input(
                 f"Stamina ({player['name']})",
                 min_value=0.0,
@@ -99,7 +99,7 @@ def post_match_grading():
                 key=f"{player['id']}_defending"
             )
 
-            # Append grading data for this player
+            # Collect grading data for this player
             grading_data.append({
                 "id": player["id"],
                 "name": player["name"],
@@ -109,9 +109,16 @@ def post_match_grading():
                 "defending": defending
             })
 
-        # Single submit button for all players
+        # Single submission for all grades
         submitted = st.form_submit_button("Submit Grades")
-
         if submitted:
             save_grades(week_number, grading_data)
             st.success("Grades submitted successfully!")
+
+# Main application logic
+def main():
+    st.title("Player Grading App")
+    post_match_grading()
+
+if __name__ == "__main__":
+    main()
