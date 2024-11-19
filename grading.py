@@ -89,15 +89,15 @@ def post_match_grading():
         for player in players:
             # Show player details
             st.subheader(player["name"])
-            
-            # Use .get() to safely access the photo key
-            photo_url = player.get("photo", "")
+
+            # Validate photo URL as a string
+            photo_url = str(player.get("photo", ""))
             if photo_url:  # Display the photo if the path is provided
-                st.image(photo_url, caption=player["name"], use_column_width=True)
+                st.image(photo_url, caption=player["name"], use_container_width=True)
 
             # Ensure unique keys for each player input
-            unique_key_prefix = player["id"] + player["name"]  # Combine `id` and `name` for uniqueness
-            
+            unique_key_prefix = f"{player['id']}_{player['name']}"  # Combine `id` and `name` for uniqueness
+
             # Display numeric inputs for grading
             stamina = st.number_input(
                 f"Stamina ({player['name']})", 
