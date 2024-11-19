@@ -90,10 +90,13 @@ def post_match_grading():
             # Show player details
             st.subheader(player["name"])
 
-            # Validate photo URL as a string
-            photo_url = str(player.get("photo", ""))
-            if photo_url:  # Display the photo if the path is provided
-                st.image(photo_url, caption=player["name"], use_container_width=True)
+            # Validate and display photo
+            photo_url = str(player.get("photo", "")).strip()  # Ensure the value is a string and remove extra spaces
+            if photo_url and photo_url.lower() != "nan":  # Check for valid photo URL or file path
+                try:
+                    st.image(photo_url, caption=player["name"], use_container_width=True)
+                except Exception as e:
+                    st.warning(f"Cannot load photo for {player['name']}: {e}")
 
             # Ensure unique keys for each player input
             unique_key_prefix = f"{player['id']}_{player['name']}"  # Combine `id` and `name` for uniqueness
