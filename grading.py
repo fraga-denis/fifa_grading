@@ -13,6 +13,23 @@ if not firebase_admin._apps:
 
 db = firestore.client()
 
+# Set up default selected week in session state
+if "selected_week" not in st.session_state:
+    st.session_state["selected_week"] = datetime.now().isocalendar()[1]
+
+# Function to handle week selection with password
+def password_protected_week_selection():
+    with st.expander("Admin: Update Selected Week"):
+        password = st.text_input("Enter Password:", type="password")
+        if password == "almighty":  # Change the password to your desired value
+            available_weeks = list(range(1, 53))  # Allow selection of weeks 1-52
+            selected_week = st.selectbox("Select Week to Grade:", available_weeks, index=st.session_state["selected_week"] - 1)
+            if st.button("Update Week"):
+                st.session_state["selected_week"] = selected_week
+                st.success(f"Week updated to {selected_week}")
+        else:
+            st.warning("Enter the correct password to update the week.")
+
 def load_match_players(week_number):
     try:
         # Fetch match data for the given week
@@ -25,6 +42,7 @@ def load_match_players(week_number):
             player_data.append({
                 "id": match_dict.get("player_id", ""),
                 "name": match_dict["player_name"],
+                "photo": match_dict.get("photo", ""),
                 "stamina": match_dict.get("stamina", 0),
                 "teamwork": match_dict.get("teamwork", 0),
                 "attacking": match_dict.get("attacking", 0),
@@ -53,8 +71,8 @@ def save_grades(week_number, grading_data):
 def post_match_grading():
     st.header("Post-Match Grading")
 
-    # Get the current week number
-    week_number = datetime.now().isocalendar()[1]
+    # Use the selected week from session state
+    week_number = st.session_state["selected_week"]
     st.write(f"Grading for Week: {week_number}")
 
     # Load players for the current match
@@ -120,6 +138,11 @@ def post_match_grading():
 
 def main():
     st.title("Player Grading App")
+
+    # Password-protected week selection
+    password_protected_week_selection()
+
+    # Post-match grading
     post_match_grading()
 
 if __name__ == "__main__":
