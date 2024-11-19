@@ -95,30 +95,33 @@ def post_match_grading():
             if photo_url:  # Display the photo if the path is provided
                 st.image(photo_url, caption=player["name"], use_column_width=True)
 
+            # Ensure unique keys for each player input
+            unique_key_prefix = player["id"] + player["name"]  # Combine `id` and `name` for uniqueness
+            
             # Display numeric inputs for grading
             stamina = st.number_input(
                 f"Stamina ({player['name']})", 
                 min_value=0.0, max_value=10.0, 
                 value=float(min(max(player["stamina"] * 2, 0), 10)), step=0.1,
-                key=f"{player['id']}_stamina"
+                key=f"{unique_key_prefix}_stamina"
             )
             teamwork = st.number_input(
                 f"Teamwork ({player['name']})", 
                 min_value=0.0, max_value=10.0, 
                 value=float(min(max(player["teamwork"] * 2, 0), 10)), step=0.1,
-                key=f"{player['id']}_teamwork"
+                key=f"{unique_key_prefix}_teamwork"
             )
             attacking = st.number_input(
                 f"Attacking ({player['name']})", 
                 min_value=0.0, max_value=10.0, 
                 value=float(min(max(player["attacking"] * 2, 0), 10)), step=0.1,
-                key=f"{player['id']}_attacking"
+                key=f"{unique_key_prefix}_attacking"
             )
             defending = st.number_input(
                 f"Defending ({player['name']})", 
                 min_value=0.0, max_value=10.0, 
                 value=float(min(max(player["defending"] * 2, 0), 10)), step=0.1,
-                key=f"{player['id']}_defending"
+                key=f"{unique_key_prefix}_defending"
             )
 
             grading_data.append({
