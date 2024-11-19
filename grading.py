@@ -19,16 +19,36 @@ if "selected_week" not in st.session_state:
 
 # Function to handle week selection with password
 def password_protected_week_selection():
+    # Initialize session state for selected week if not already done
+    if "selected_week" not in st.session_state:
+        st.session_state["selected_week"] = datetime.now().isocalendar()[1]  # Default to the current week
+
+    if "week_change_allowed" not in st.session_state:
+        st.session_state["week_change_allowed"] = False  # Default to no week change without password
+
+    # Display the currently selected week
+    st.subheader(f"Currently Selected Week: {st.session_state['selected_week']}")
+
+    # Check for password to allow week change
     with st.expander("Admin: Update Selected Week"):
-        password = st.text_input("Enter Password:", type="password")
-        if password == "almighty":  # Change the password to your desired value
+        if not st.session_state["week_change_allowed"]:
+            # Prompt for password
+            password = st.text_input("Enter Password:", type="password")
+            if password == "almighty":  # Change the password to your desired value
+                st.session_state["week_change_allowed"] = True
+                st.success("Access granted. You can now update the week.")
+            else:
+                st.warning("Enter the correct password to unlock week selection.")
+
+        # Allow week selection if the password is correct
+        if st.session_state["week_change_allowed"]:
             available_weeks = list(range(1, 53))  # Allow selection of weeks 1-52
             selected_week = st.selectbox("Select Week to Grade:", available_weeks, index=st.session_state["selected_week"] - 1)
             if st.button("Update Week"):
                 st.session_state["selected_week"] = selected_week
-                st.success(f"Week updated to {selected_week}")
-        else:
-            st.warning("Enter the correct password to update the week.")
+                st.session_state["week_change_allowed"] = False  # Lock week change after update
+                st.success(f"Week updated to {selected_week}. To change again, enter the password.")
+
 
 def load_match_players(week_number):
     try:
