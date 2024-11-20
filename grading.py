@@ -24,7 +24,7 @@ def get_all_photo_urls():
     Fetch all photo URLs from Cloudinary using credentials from Streamlit secrets.
     
     Returns:
-        List[dict]: A list of dictionaries containing `public_id` and `secure_url`.
+        dict: A dictionary with `public_id` as keys and `secure_url` as values.
     """
     # Access Cloudinary credentials from Streamlit secrets
     cloudinary_key = st.secrets["cloudinary"]
@@ -42,15 +42,12 @@ def get_all_photo_urls():
             type="upload",  # Fetch resources uploaded directly
             max_results=500  # Adjust as needed
         )
-        # Extract the `public_id` and `secure_url` for each resource
-        photos = [
-            {"public_id": resource["public_id"], "url": resource["secure_url"]}
-            for resource in response["resources"]
-        ]
-        return photos
+        # Create a dictionary mapping public_id to secure_url
+        photo_map = {resource["public_id"]: resource["secure_url"] for resource in response["resources"]}
+        return photo_map
     except Exception as e:
         print(f"Error fetching photo URLs: {e}")
-        return []
+        return {}
 
 
 # Function to handle week selection with password
@@ -91,15 +88,14 @@ def load_match_players(week_number):
         match_docs = matches_ref.stream()
         
         # Fetch photo URLs from Cloudinary
-        cloudinary_photos = get_all_photo_urls()
-        photo_map = {photo["public_id"]: photo["url"] for photo in cloudinary_photos}
+        photo_map = get_all_photo_urls()
 
         player_data = []
         for match in match_docs:
             match_dict = match.to_dict()
             player_id = match_dict.get("player_id", "")
             
-            # Match the photo URL based on player ID
+            # Retrieve the photo URL directly from the photo_map
             photo_url = photo_map.get(player_id, "")  # Default to empty if not found
             
             player_data.append({
@@ -190,7 +186,7 @@ def post_match_grading():
             # Show player details
             st.subheader(player["name"])
 
-            # Validate and display photo
+            # Display the photo using the URL field
             photo_url = player.get("photo", "")
             if photo_url:
                 try:
@@ -242,7 +238,6 @@ def post_match_grading():
         submitted = st.form_submit_button("Submit Grades")
         if submitted:
             save_grades(week_number, grading_data)
-
 
 def main():
     st.title("Player Grading App")
