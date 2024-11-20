@@ -133,14 +133,7 @@ def load_match_players(week_number):
         return []
 
 
-To ensure the qualitative field is stored in the grades collection and to save the match balance data in the same collection (associated with the week_number), you need to adjust how the data is structured and saved. Here’s how you can fix it:
 
-Updated Code
-1. Fix save_grades to Include Qualitative and Match Balance Fields
-Ensure the save_grades function includes both the qualitative feedback and match balance fields.
-
-python
-Copy code
 def save_grades(week_number, grading_data, match_balance):
     """
     Save player grades along with qualitative feedback and match balance to the grades collection.
