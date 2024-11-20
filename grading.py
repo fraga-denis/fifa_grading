@@ -288,7 +288,7 @@ def post_match_grading():
                     min_value=0.0, max_value=10.0, 
                     value=player["defending"],  # Starting value
                     step=0.1,
-                    key=f"{unique_key_prefix}_defending"
+                    key=f"{unique_key_prefix}_defending")
 
             # Add a text area for qualitative feedback
             qualitative = st.text_area(
