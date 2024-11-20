@@ -77,7 +77,7 @@ def save_grades(week_number, grading_data):
             # Saving player grades with player ID included
             db.collection("grades").add({
                 "week": week_number,
-                "player_id": grade["id"],  # Added player_id to the saved data
+                "player_id": grade["id"],  # Ensure player_id is saved
                 "player_name": grade["name"],
                 "stamina": grade["stamina"],
                 "teamwork": grade["teamwork"],
@@ -87,6 +87,41 @@ def save_grades(week_number, grading_data):
         st.success("Grades saved successfully!")
     except Exception as e:
         st.error(f"Error saving grades: {e}")
+
+def update_grades_with_player_id():
+    """
+    Update existing records in the 'grades' collection to include player ID from the 'matches' collection.
+    """
+    try:
+        # Fetch all grades from the 'grades' collection
+        grades_ref = db.collection("grades").stream()
+        grades_to_update = []
+
+        for grade in grades_ref:
+            grade_data = grade.to_dict()
+            if "player_id" not in grade_data or not grade_data["player_id"]:
+                # If player_id is missing, get the player_id from the matches collection
+                player_name = grade_data.get("player_name", "")
+                week = grade_data.get("week", "")
+
+                # Find the matching player in the 'matches' collection
+                matches_ref = db.collection("matches").where("week", "==", week).where("player_name", "==", player_name).stream()
+                for match in matches_ref:
+                    match_data = match.to_dict()
+                    if "player_id" in match_data:
+                        # Add player_id to the grade data
+                        grade_data["player_id"] = match_data["player_id"]
+                        grades_to_update.append((grade.id, grade_data))
+                        break
+
+        # Update grades with missing player_id
+        for grade_id, updated_data in grades_to_update:
+            db.collection("grades").document(grade_id).set(updated_data, merge=True)
+
+        st.success("Grades collection updated with player IDs successfully!")
+
+    except Exception as e:
+        st.error(f"Error updating grades with player IDs: {e}")
 
 def post_match_grading():
     st.header("Post-Match Grading")
@@ -171,6 +206,8 @@ def main():
     # Post-match grading
     post_match_grading()
 
+    # Automatically update grades collection with player IDs from matches
+    update_grades_with_player_id()
+
 if __name__ == "__main__":
     main()
-
