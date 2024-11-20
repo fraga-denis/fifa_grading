@@ -2,10 +2,12 @@ import streamlit as st
 import firebase_admin
 from firebase_admin import credentials, firestore
 from datetime import datetime
+import cloudinary
+import cloudinary.api
+
 
 # Load Firebase credentials from Streamlit secrets
 firebase_key = dict(st.secrets["firebase_key"])  # Ensure it's converted to a dict
-
 # Initialize Firebase Firestore
 if not firebase_admin._apps:
     cred = credentials.Certificate(firebase_key)
@@ -16,6 +18,40 @@ db = firestore.client()
 # Set up default selected week in session state
 if "selected_week" not in st.session_state:
     st.session_state["selected_week"] = datetime.now().isocalendar()[1]
+
+def get_all_photo_urls():
+    """
+    Fetch all photo URLs from Cloudinary using credentials from Streamlit secrets.
+    
+    Returns:
+        List[dict]: A list of dictionaries containing `public_id` and `secure_url`.
+    """
+    # Access Cloudinary credentials from Streamlit secrets
+    cloudinary_key = st.secrets["cloudinary"]
+
+    # Configure Cloudinary
+    cloudinary.config(
+        cloud_name=cloudinary_key["cloud_name"],
+        api_key=cloudinary_key["api_key"],
+        api_secret=cloudinary_key["api_secret"]
+    )
+    
+    try:
+        # Fetch all uploaded resources
+        response = cloudinary.api.resources(
+            type="upload",  # Fetch resources uploaded directly
+            max_results=500  # Adjust as needed
+        )
+        # Extract the `public_id` and `secure_url` for each resource
+        photos = [
+            {"public_id": resource["public_id"], "url": resource["secure_url"]}
+            for resource in response["resources"]
+        ]
+        return photos
+    except Exception as e:
+        print(f"Error fetching photo URLs: {e}")
+        return []
+
 
 # Function to handle week selection with password
 def password_protected_week_selection():
@@ -54,13 +90,22 @@ def load_match_players(week_number):
         matches_ref = db.collection("matches").where("week", "==", week_number)
         match_docs = matches_ref.stream()
         
+        # Fetch photo URLs from Cloudinary
+        cloudinary_photos = get_all_photo_urls()
+        photo_map = {photo["public_id"]: photo["url"] for photo in cloudinary_photos}
+
         player_data = []
         for match in match_docs:
             match_dict = match.to_dict()
+            player_id = match_dict.get("player_id", "")
+            
+            # Match the photo URL based on player ID
+            photo_url = photo_map.get(player_id, "")  # Default to empty if not found
+            
             player_data.append({
-                "id": match_dict.get("player_id", ""),
+                "id": player_id,
                 "name": match_dict["player_name"],
-                "photo": match_dict.get("photo", ""),
+                "photo": photo_url,  # Use the Cloudinary photo URL
                 "stamina": match_dict.get("stamina", 0),
                 "teamwork": match_dict.get("teamwork", 0),
                 "attacking": match_dict.get("attacking", 0),
@@ -146,44 +191,46 @@ def post_match_grading():
             st.subheader(player["name"])
 
             # Validate and display photo
-            photo_url = str(player.get("photo", "")).strip()  # Ensure the value is a string and remove extra spaces
-            if photo_url and photo_url.lower() != "nan":  # Check for valid photo URL or file path
+            photo_url = player.get("photo", "")
+            if photo_url:
                 try:
-                    st.image(photo_url, caption=player["name"], use_container_width=True)
+                    st.image(photo_url, caption=player["name"], use_column_width=True)
                 except Exception as e:
                     st.warning(f"Cannot load photo for {player['name']}: {e}")
+            else:
+                st.warning(f"No photo available for {player['name']}")
 
-            # Ensure unique keys for each player input
-            unique_key_prefix = f"{player['id']}_{player['name']}"  # Combine `id` and `name` for uniqueness
+            # Unique keys for input fields
+            unique_key_prefix = f"{player['id']}_{player['name']}"
 
             # Display numeric inputs for grading
             stamina = st.number_input(
                 f"Stamina ({player['name']})", 
                 min_value=0.0, max_value=10.0, 
-                value=float(min(max(player["stamina"] * 2, 0), 10)), step=0.1,
+                value=float(player["stamina"]), step=0.1,
                 key=f"{unique_key_prefix}_stamina"
             )
             teamwork = st.number_input(
                 f"Teamwork ({player['name']})", 
                 min_value=0.0, max_value=10.0, 
-                value=float(min(max(player["teamwork"] * 2, 0), 10)), step=0.1,
+                value=float(player["teamwork"]), step=0.1,
                 key=f"{unique_key_prefix}_teamwork"
             )
             attacking = st.number_input(
                 f"Attacking ({player['name']})", 
                 min_value=0.0, max_value=10.0, 
-                value=float(min(max(player["attacking"] * 2, 0), 10)), step=0.1,
+                value=float(player["attacking"]), step=0.1,
                 key=f"{unique_key_prefix}_attacking"
             )
             defending = st.number_input(
                 f"Defending ({player['name']})", 
                 min_value=0.0, max_value=10.0, 
-                value=float(min(max(player["defending"] * 2, 0), 10)), step=0.1,
+                value=float(player["defending"]), step=0.1,
                 key=f"{unique_key_prefix}_defending"
             )
 
             grading_data.append({
-                "id": player["id"],  # Added player ID to be saved in the grades collection
+                "id": player["id"],
                 "name": player["name"],
                 "stamina": stamina,
                 "teamwork": teamwork,
@@ -191,7 +238,7 @@ def post_match_grading():
                 "defending": defending,
             })
 
-        # Add a single submit button for the form
+        # Submit the form
         submitted = st.form_submit_button("Submit Grades")
         if submitted:
             save_grades(week_number, grading_data)
