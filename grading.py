@@ -115,17 +115,21 @@ def load_match_players(week_number):
             # Match `player_id` directly to the adjusted `public_id`
             photo_url = photo_map.get(player_id, "https://via.placeholder.com/150?text=No+Photo")
             
-            # Resize the photo
-            
-            
+            # Calculate starting values from matches (times 2)
+            stamina = match_dict.get("stamina", 0) * 2
+            teamwork = match_dict.get("teamwork", 0) * 2
+            attacking = match_dict.get("attacking", 0) * 2
+            defending = match_dict.get("defending", 0) * 2
+
             player_data.append({
                 "id": player_id,
                 "name": match_dict["player_name"],
-                "photo": photo_url,  # Use resized photo URL
-                "stamina": match_dict.get("stamina", 0),
-                "teamwork": match_dict.get("teamwork", 0),
-                "attacking": match_dict.get("attacking", 0),
-                "defending": match_dict.get("defending", 0),
+                "photo": photo_url,
+                "stamina": min(stamina, 10),  # Cap at 10
+                "teamwork": min(teamwork, 10),  # Cap at 10
+                "attacking": min(attacking, 10),  # Cap at 10
+                "defending": min(defending, 10),  # Cap at 10
+                "qualitative": "",  # Default qualitative feedback as empty
             })
         return player_data
     except Exception as e:
@@ -250,20 +254,21 @@ def post_match_grading():
             # Unique keys for input fields
             unique_key_prefix = f"{player['id']}_{player['name']}"
 
-            # Add grading fields side by side
             col1, col2 = st.columns(2)
             with col1:
                 stamina = st.number_input(
                     f"Stamina", 
                     min_value=0.0, max_value=10.0, 
-                    value=float(player["stamina"]), step=0.1,
+                    value=player["stamina"],  # Starting value
+                    step=0.1,
                     key=f"{unique_key_prefix}_stamina"
                 )
             with col2:
                 teamwork = st.number_input(
                     f"Teamwork", 
                     min_value=0.0, max_value=10.0, 
-                    value=float(player["teamwork"]), step=0.1,
+                    value=player["teamwork"],  # Starting value
+                    step=0.1,
                     key=f"{unique_key_prefix}_teamwork"
                 )
 
@@ -273,16 +278,17 @@ def post_match_grading():
                 attacking = st.number_input(
                     f"Attacking", 
                     min_value=0.0, max_value=10.0, 
-                    value=float(player["attacking"]), step=0.1,
+                    value=player["attacking"],  # Starting value
+                    step=0.1,
                     key=f"{unique_key_prefix}_attacking"
                 )
             with col4:
                 defending = st.number_input(
                     f"Defending", 
                     min_value=0.0, max_value=10.0, 
-                    value=float(player["defending"]), step=0.1,
+                    value=player["defending"],  # Starting value
+                    step=0.1,
                     key=f"{unique_key_prefix}_defending"
-                )
 
             # Add a text area for qualitative feedback
             qualitative = st.text_area(
