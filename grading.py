@@ -210,7 +210,7 @@ def post_match_grading():
             photo_url = player.get("photo", "")
             if photo_url:
                 try:
-                    st.image(photo_url, caption=player["name"], width=75)  # Set width (in pixels)
+                    st.image(photo_url, caption=player["name"], width=225)  # Set width (in pixels)
                 except Exception as e:
                     st.warning(f"Cannot load photo for {player['name']}: {e}")
             else:
