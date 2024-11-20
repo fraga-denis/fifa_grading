@@ -256,6 +256,13 @@ def post_match_grading():
                     key=f"{unique_key_prefix}_defending"
                 )
 
+            # Add a text area for qualitative feedback
+            qualitative = st.text_area(
+                f"Qualitative Feedback ({player['name']})",
+                value="",
+                key=f"{unique_key_prefix}_qualitative"
+            )
+
             # Append the grading data
             grading_data.append({
                 "id": player["id"],
@@ -264,12 +271,26 @@ def post_match_grading():
                 "teamwork": teamwork,
                 "attacking": attacking,
                 "defending": defending,
+                "qualitative": qualitative,
             })
+
+        # Add match balance question
+        match_balance = st.radio(
+            "Do you think the match was balanced?",
+            options=["Yes 👍", "No 👎"],
+            key="match_balance",
+            horizontal=True
+        )
 
         # Submit the form
         submitted = st.form_submit_button("Submit Grades")
         if submitted:
+            # Save grading data
             save_grades(week_number, grading_data)
+
+            # Save match balance feedback
+            save_match_balance(week_number, match_balance)
+
 
 def main():
     st.title("Player Grading App")
