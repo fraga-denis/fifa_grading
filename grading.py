@@ -21,10 +21,10 @@ if "selected_week" not in st.session_state:
 
 def get_all_photo_urls():
     """
-    Fetch all photo URLs from Cloudinary using credentials from Streamlit secrets.
+    Fetch all photo URLs from Cloudinary and adjust `public_id` to match `player_id`.
     
     Returns:
-        dict: A dictionary with `public_id` as keys and `secure_url` as values.
+        dict: A dictionary with adjusted `public_id` (matching `player_id`) as keys and `secure_url` as values.
     """
     # Access Cloudinary credentials from Streamlit secrets
     cloudinary_key = st.secrets["cloudinary"]
@@ -42,13 +42,12 @@ def get_all_photo_urls():
             type="upload",  # Fetch resources uploaded directly
             max_results=500  # Adjust as needed
         )
-        # Create a dictionary mapping public_id to secure_url
-        photo_map = {resource["public_id"]: resource["secure_url"] for resource in response["resources"]}
+        # Adjust `public_id` to match `player_id` by stripping everything after '_'
+        photo_map = {resource["public_id"].split('_')[0]: resource["secure_url"] for resource in response["resources"]}
         return photo_map
     except Exception as e:
         print(f"Error fetching photo URLs: {e}")
         return {}
-
 
 # Function to handle week selection with password
 def password_protected_week_selection():
@@ -87,7 +86,7 @@ def load_match_players(week_number):
         matches_ref = db.collection("matches").where("week", "==", week_number)
         match_docs = matches_ref.stream()
         
-        # Fetch photo URLs from Cloudinary
+        # Fetch adjusted photo URLs from Cloudinary
         photo_map = get_all_photo_urls()
 
         player_data = []
@@ -95,13 +94,13 @@ def load_match_players(week_number):
             match_dict = match.to_dict()
             player_id = match_dict.get("player_id", "")
             
-            # Retrieve the photo URL directly from the photo_map
-            photo_url = photo_map.get(player_id, "")  # Default to empty if not found
+            # Match `player_id` directly to the adjusted `public_id`
+            photo_url = photo_map.get(player_id, "https://via.placeholder.com/150?text=No+Photo")
             
             player_data.append({
                 "id": player_id,
                 "name": match_dict["player_name"],
-                "photo": photo_url,  # Use the Cloudinary photo URL
+                "photo": photo_url,
                 "stamina": match_dict.get("stamina", 0),
                 "teamwork": match_dict.get("teamwork", 0),
                 "attacking": match_dict.get("attacking", 0),
