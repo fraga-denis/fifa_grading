@@ -161,21 +161,22 @@ def save_grades(week_number, grading_data):
         st.error(f"Error saving grades: {e}")
 def save_match_balance(week_number, match_balance):
     """
-    Save the match balance feedback to the grades collection as a single entry for the week.
+    Save the match balance feedback to a new Firestore collection called 'match_balance'.
 
     Args:
         week_number (int): The week number of the match.
         match_balance (str): The answer to the match balance question.
     """
     try:
-        # Save or update the match balance feedback for the given week
-        db.collection("grades").document(f"week_{week_number}_match_balance").set({
+        # Save or update the match balance feedback for the given week in the new collection
+        db.collection("match_balance").document(f"week_{week_number}").set({
             "week": week_number,
             "match_balance": match_balance
         })
-        st.success("Match balance feedback saved successfully!")
+        st.success("Match balance feedback saved successfully in 'match_balance' collection!")
     except Exception as e:
         st.error(f"Error saving match balance feedback: {e}")
+
 def update_grades_with_player_id():
     """
     Update existing records in the 'grades' collection to include player ID from the 'matches' collection.
