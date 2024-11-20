@@ -116,7 +116,7 @@ def load_match_players(week_number):
             photo_url = photo_map.get(player_id, "https://via.placeholder.com/150?text=No+Photo")
             
             # Resize the photo
-            resized_photo_url = resize_photo_url(photo_url, width=40, height=60)  # Example: 40x60px
+            
             
             player_data.append({
                 "id": player_id,
@@ -206,11 +206,11 @@ def post_match_grading():
             # Show player details
             st.subheader(player["name"])
 
-            # Display the photo using the URL field
+            # Display the photo with a fixed size
             photo_url = player.get("photo", "")
             if photo_url:
                 try:
-                    st.image(photo_url, caption=player["name"], use_column_width=True)
+                    st.image(photo_url, caption=player["name"], width=75)  # Set width (in pixels)
                 except Exception as e:
                     st.warning(f"Cannot load photo for {player['name']}: {e}")
             else:
@@ -219,7 +219,7 @@ def post_match_grading():
             # Unique keys for input fields
             unique_key_prefix = f"{player['id']}_{player['name']}"
 
-            # Display numeric inputs for grading
+            # Add grading fields
             stamina = st.number_input(
                 f"Stamina ({player['name']})", 
                 min_value=0.0, max_value=10.0, 
