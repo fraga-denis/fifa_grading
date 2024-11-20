@@ -250,6 +250,8 @@ def main():
 
     # Automatically update grades collection with player IDs from matches
     update_grades_with_player_id()
+    photo_map = get_all_photo_urls()
+    print("Photo Map:", photo_map)
 
 if __name__ == "__main__":
     main()
