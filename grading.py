@@ -242,10 +242,9 @@ def post_match_grading():
             photo_url = player.get("photo", "")
             if photo_url:
                 try:
-                    # Create a central column for the image
                     col_image, _, _ = st.columns([2, 1, 1])  # First column wider
                     with col_image:
-                        st.image(photo_url, caption=player["name"], width=225)  # Set width (in pixels)
+                        st.image(photo_url, caption=player["name"], width=225)
                 except Exception as e:
                     st.warning(f"Cannot load photo for {player['name']}: {e}")
             else:
@@ -259,7 +258,7 @@ def post_match_grading():
                 stamina = st.number_input(
                     f"Stamina", 
                     min_value=0.0, max_value=10.0, 
-                    value=player["stamina"],  # Starting value
+                    value=float(player["stamina"]),  # Ensure float type
                     step=0.1,
                     key=f"{unique_key_prefix}_stamina"
                 )
@@ -267,7 +266,7 @@ def post_match_grading():
                 teamwork = st.number_input(
                     f"Teamwork", 
                     min_value=0.0, max_value=10.0, 
-                    value=player["teamwork"],  # Starting value
+                    value=float(player["teamwork"]),  # Ensure float type
                     step=0.1,
                     key=f"{unique_key_prefix}_teamwork"
                 )
@@ -278,7 +277,7 @@ def post_match_grading():
                 attacking = st.number_input(
                     f"Attacking", 
                     min_value=0.0, max_value=10.0, 
-                    value=player["attacking"],  # Starting value
+                    value=float(player["attacking"]),  # Ensure float type
                     step=0.1,
                     key=f"{unique_key_prefix}_attacking"
                 )
@@ -286,9 +285,10 @@ def post_match_grading():
                 defending = st.number_input(
                     f"Defending", 
                     min_value=0.0, max_value=10.0, 
-                    value=player["defending"],  # Starting value
+                    value=float(player["defending"]),  # Ensure float type
                     step=0.1,
-                    key=f"{unique_key_prefix}_defending")
+                    key=f"{unique_key_prefix}_defending"
+                )
 
             # Add a text area for qualitative feedback
             qualitative = st.text_area(
