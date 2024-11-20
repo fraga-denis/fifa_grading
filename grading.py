@@ -19,7 +19,6 @@ if "selected_week" not in st.session_state:
 
 # Function to handle week selection with password
 def password_protected_week_selection():
-    # Initialize session state for selected week if not already done
     if "selected_week" not in st.session_state:
         st.session_state["selected_week"] = datetime.now().isocalendar()[1]  # Default to the current week
 
@@ -32,7 +31,6 @@ def password_protected_week_selection():
     # Check for password to allow week change
     with st.expander("Admin: Update Selected Week"):
         if not st.session_state["week_change_allowed"]:
-            # Prompt for password
             password = st.text_input("Enter Password:", type="password")
             if password == "almighty":  # Change the password to your desired value
                 st.session_state["week_change_allowed"] = True
@@ -76,8 +74,10 @@ def load_match_players(week_number):
 def save_grades(week_number, grading_data):
     try:
         for grade in grading_data:
+            # Saving player grades with player ID included
             db.collection("grades").add({
                 "week": week_number,
+                "player_id": grade["id"],  # Added player_id to the saved data
                 "player_name": grade["name"],
                 "stamina": grade["stamina"],
                 "teamwork": grade["teamwork"],
@@ -148,7 +148,7 @@ def post_match_grading():
             )
 
             grading_data.append({
-                "id": player["id"],
+                "id": player["id"],  # Added player ID to be saved in the grades collection
                 "name": player["name"],
                 "stamina": stamina,
                 "teamwork": teamwork,
@@ -173,3 +173,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
