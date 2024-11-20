@@ -290,7 +290,27 @@ def post_match_grading():
 
             # Save match balance feedback
             save_match_balance(week_number, match_balance)
+def save_match_balance(week_number, match_balance):
+    """
+    Save the match balance feedback to the matches collection.
+    
+    Args:
+        week_number (int): The week number of the match.
+        match_balance (str): The answer to the match balance question.
+    """
+    try:
+        # Update the `matches` collection with the match balance feedback
+        matches_ref = db.collection("matches").where("week", "==", week_number).get()
 
+        for match in matches_ref:
+            match_id = match.id
+            db.collection("matches").document(match_id).update({
+                "match_balance": match_balance
+            })
+
+        st.success("Match balance feedback saved successfully!")
+    except Exception as e:
+        st.error(f"Error saving match balance feedback: {e}")
 
 def main():
     st.title("Player Grading App")
