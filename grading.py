@@ -121,7 +121,7 @@ def load_match_players(week_number):
             player_data.append({
                 "id": player_id,
                 "name": match_dict["player_name"],
-                "photo": resized_photo_url,  # Use resized photo URL
+                "photo": photo_url,  # Use resized photo URL
                 "stamina": match_dict.get("stamina", 0),
                 "teamwork": match_dict.get("teamwork", 0),
                 "attacking": match_dict.get("attacking", 0),
