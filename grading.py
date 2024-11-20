@@ -285,11 +285,9 @@ def post_match_grading():
         # Submit the form
         submitted = st.form_submit_button("Submit Grades")
         if submitted:
-            # Save grading data
-            save_grades(week_number, grading_data)
+            # Save grading data along with match balance
+            save_grades(week_number, grading_data, match_balance)
 
-            # Save match balance feedback
-            save_match_balance(week_number, match_balance)
 def save_match_balance(week_number, match_balance):
     """
     Save the match balance feedback to the matches collection.
@@ -323,8 +321,7 @@ def main():
 
     # Automatically update grades collection with player IDs from matches
     update_grades_with_player_id()
-    photo_map = get_all_photo_urls()
-    print("Photo Map:", photo_map)
+
 
 if __name__ == "__main__":
     main()
