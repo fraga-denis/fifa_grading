@@ -132,10 +132,27 @@ def load_match_players(week_number):
         st.error(f"Error loading match players: {e}")
         return []
 
-def save_grades(week_number, grading_data):
+
+To ensure the qualitative field is stored in the grades collection and to save the match balance data in the same collection (associated with the week_number), you need to adjust how the data is structured and saved. Here’s how you can fix it:
+
+Updated Code
+1. Fix save_grades to Include Qualitative and Match Balance Fields
+Ensure the save_grades function includes both the qualitative feedback and match balance fields.
+
+python
+Copy code
+def save_grades(week_number, grading_data, match_balance):
+    """
+    Save player grades along with qualitative feedback and match balance to the grades collection.
+    
+    Args:
+        week_number (int): The week number of the match.
+        grading_data (list): List of dictionaries containing player grades and qualitative feedback.
+        match_balance (str): The match balance feedback for the week.
+    """
     try:
         for grade in grading_data:
-            # Saving player grades with player ID included
+            # Save each player's grades along with match balance
             db.collection("grades").add({
                 "week": week_number,
                 "player_id": grade["id"],  # Ensure player_id is saved
@@ -144,8 +161,10 @@ def save_grades(week_number, grading_data):
                 "teamwork": grade["teamwork"],
                 "attacking": grade["attacking"],
                 "defending": grade["defending"],
+                "qualitative": grade["qualitative"],  # Add qualitative feedback
+                "match_balance": match_balance  # Add match balance to each player's record
             })
-        st.success("Grades saved successfully!")
+        st.success("Grades and match feedback saved successfully!")
     except Exception as e:
         st.error(f"Error saving grades: {e}")
 
