@@ -155,12 +155,27 @@ def save_grades(week_number, grading_data, match_balance):
                 "attacking": grade["attacking"],
                 "defending": grade["defending"],
                 "qualitative": grade["qualitative"],  # Add qualitative feedback
-                "match_balance": match_balance  # Add match balance to each player's record
             })
         st.success("Grades and match feedback saved successfully!")
     except Exception as e:
         st.error(f"Error saving grades: {e}")
+def save_match_balance(week_number, match_balance):
+    """
+    Save the match balance feedback to the grades collection as a single entry for the week.
 
+    Args:
+        week_number (int): The week number of the match.
+        match_balance (str): The answer to the match balance question.
+    """
+    try:
+        # Save or update the match balance feedback for the given week
+        db.collection("grades").document(f"week_{week_number}_match_balance").set({
+            "week": week_number,
+            "match_balance": match_balance
+        })
+        st.success("Match balance feedback saved successfully!")
+    except Exception as e:
+        st.error(f"Error saving match balance feedback: {e}")
 def update_grades_with_player_id():
     """
     Update existing records in the 'grades' collection to include player ID from the 'matches' collection.
@@ -297,8 +312,11 @@ def post_match_grading():
         # Submit the form
         submitted = st.form_submit_button("Submit Grades")
         if submitted:
-            # Save grading data along with match balance
-            save_grades(week_number, grading_data, match_balance)
+            # Save grading data
+            save_grades(week_number, grading_data)
+
+            # Save match balance feedback
+            save_match_balance(week_number, match_balance)
 
 def save_match_balance(week_number, match_balance):
     """
