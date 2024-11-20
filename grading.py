@@ -48,6 +48,24 @@ def get_all_photo_urls():
     except Exception as e:
         print(f"Error fetching photo URLs: {e}")
         return {}
+        
+def resize_photo_url(photo_url, width, height):
+    """
+    Resize a Cloudinary photo URL to the specified dimensions.
+    
+    Args:
+        photo_url (str): The original Cloudinary photo URL.
+        width (int): Desired width in pixels.
+        height (int): Desired height in pixels.
+    
+    Returns:
+        str: The resized Cloudinary photo URL.
+    """
+    # Insert transformation parameters into the Cloudinary URL
+    parts = photo_url.split('/upload/')
+    if len(parts) == 2:
+        return f"{parts[0]}/upload/w_{width},h_{height},c_fill/{parts[1]}"
+    return photo_url  # Return original URL if transformation fails
 
 # Function to handle week selection with password
 def password_protected_week_selection():
@@ -97,10 +115,13 @@ def load_match_players(week_number):
             # Match `player_id` directly to the adjusted `public_id`
             photo_url = photo_map.get(player_id, "https://via.placeholder.com/150?text=No+Photo")
             
+            # Resize the photo
+            resized_photo_url = resize_photo_url(photo_url, width=40, height=60)  # Example: 40x60px
+            
             player_data.append({
                 "id": player_id,
                 "name": match_dict["player_name"],
-                "photo": photo_url,
+                "photo": resized_photo_url,  # Use resized photo URL
                 "stamina": match_dict.get("stamina", 0),
                 "teamwork": match_dict.get("teamwork", 0),
                 "attacking": match_dict.get("attacking", 0),
