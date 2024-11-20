@@ -206,11 +206,14 @@ def post_match_grading():
             # Show player details
             st.subheader(player["name"])
 
-            # Display the photo with a fixed size
+            # Display the photo with a fixed size, centralized
             photo_url = player.get("photo", "")
             if photo_url:
                 try:
-                    st.image(photo_url, caption=player["name"], width=225)  # Set width (in pixels)
+                    # Create a central column for the image
+                    col_image, _, _ = st.columns([2, 1, 1])  # First column wider
+                    with col_image:
+                        st.image(photo_url, caption=player["name"], width=225)  # Set width (in pixels)
                 except Exception as e:
                     st.warning(f"Cannot load photo for {player['name']}: {e}")
             else:
@@ -219,32 +222,41 @@ def post_match_grading():
             # Unique keys for input fields
             unique_key_prefix = f"{player['id']}_{player['name']}"
 
-            # Add grading fields
-            stamina = st.number_input(
-                f"Stamina ({player['name']})", 
-                min_value=0.0, max_value=10.0, 
-                value=float(player["stamina"]), step=0.1,
-                key=f"{unique_key_prefix}_stamina"
-            )
-            teamwork = st.number_input(
-                f"Teamwork ({player['name']})", 
-                min_value=0.0, max_value=10.0, 
-                value=float(player["teamwork"]), step=0.1,
-                key=f"{unique_key_prefix}_teamwork"
-            )
-            attacking = st.number_input(
-                f"Attacking ({player['name']})", 
-                min_value=0.0, max_value=10.0, 
-                value=float(player["attacking"]), step=0.1,
-                key=f"{unique_key_prefix}_attacking"
-            )
-            defending = st.number_input(
-                f"Defending ({player['name']})", 
-                min_value=0.0, max_value=10.0, 
-                value=float(player["defending"]), step=0.1,
-                key=f"{unique_key_prefix}_defending"
-            )
+            # Add grading fields side by side
+            col1, col2 = st.columns(2)
+            with col1:
+                stamina = st.number_input(
+                    f"Stamina", 
+                    min_value=0.0, max_value=10.0, 
+                    value=float(player["stamina"]), step=0.1,
+                    key=f"{unique_key_prefix}_stamina"
+                )
+            with col2:
+                teamwork = st.number_input(
+                    f"Teamwork", 
+                    min_value=0.0, max_value=10.0, 
+                    value=float(player["teamwork"]), step=0.1,
+                    key=f"{unique_key_prefix}_teamwork"
+                )
 
+            # Add attacking and defending fields side by side
+            col3, col4 = st.columns(2)
+            with col3:
+                attacking = st.number_input(
+                    f"Attacking", 
+                    min_value=0.0, max_value=10.0, 
+                    value=float(player["attacking"]), step=0.1,
+                    key=f"{unique_key_prefix}_attacking"
+                )
+            with col4:
+                defending = st.number_input(
+                    f"Defending", 
+                    min_value=0.0, max_value=10.0, 
+                    value=float(player["defending"]), step=0.1,
+                    key=f"{unique_key_prefix}_defending"
+                )
+
+            # Append the grading data
             grading_data.append({
                 "id": player["id"],
                 "name": player["name"],
