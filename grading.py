@@ -134,7 +134,7 @@ def load_match_players(week_number):
 
 
 
-def save_grades(week_number, grading_data, match_balance):
+def save_grades(week_number, grading_data):
     """
     Save player grades along with qualitative feedback and match balance to the grades collection.
     
