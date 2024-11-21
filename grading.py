@@ -187,7 +187,7 @@ def update_grades_with_player_id():
     """
     try:
         # Fetch all grades from the 'grades' collection
-        grades_ref = db.collection("grades").stream()
+        grades_ref = db.collection("matches").stream()
         grades_to_update = []
 
         for grade in grades_ref:
