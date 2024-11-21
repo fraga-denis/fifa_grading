@@ -334,10 +334,11 @@ def save_match_balance(week_number, match_balance):
         match_balance (str): The answer to the match balance question.
     """
     try:
-        # Save or update the match balance feedback for the given week in the new collection
-        db.collection("match_balance").document(f"week_{week_number}").set({
+        # Add a new entry for the match balance feedback
+        db.collection("match_balance").add({
             "week": week_number,
-            "match_balance": match_balance
+            "match_balance": match_balance,
+            "submitted_at": datetime.now()  # Add a timestamp for each submission
         })
         st.success("Match balance feedback saved successfully in 'match_balance' collection!")
     except Exception as e:
