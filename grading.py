@@ -347,15 +347,13 @@ def save_match_balance(week_number, match_balance):
 def main():
     st.title("Player Grading App")
 
-    # Password-protected week selection
-    password_protected_week_selection()
-
     # Post-match grading
     post_match_grading()
 
     # Automatically update grades collection with player IDs from matches
     update_grades_with_player_id()
-
+    # Password-protected week selection
+    password_protected_week_selection()
 
 if __name__ == "__main__":
     main()
