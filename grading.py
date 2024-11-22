@@ -345,7 +345,7 @@ def save_match_balance(week_number, match_balance):
         st.error(f"Error saving match balance feedback: {e}")
 
 def main():
-    st.title("Player Grading App")
+    st.title("P&W(🐷📣) Grading app")
 
     # Post-match grading
     post_match_grading()
