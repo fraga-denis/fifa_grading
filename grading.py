@@ -211,7 +211,7 @@ def update_grades_with_player_id():
         for grade_id, updated_data in grades_to_update:
             db.collection("grades").document(grade_id).set(updated_data, merge=True)
 
-        st.success("Grades collection updated with player IDs successfully!")
+        
 
     except Exception as e:
         st.error(f"Error updating grades with player IDs: {e}")
