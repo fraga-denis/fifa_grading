@@ -256,17 +256,17 @@ def post_match_grading():
             col1, col2 = st.columns(2)
             with col1:
                 stamina = st.number_input(
-                    f"Stamina", 
-                    min_value=0.0, max_value=10.0, 
-                    value=float(player["stamina"]),  # Ensure float type
+                    f"Stamina (from 1 to 10)", 
+                    min_value=1.0, max_value=10.0, 
+                    value=float(5),  # Ensure float type
                     step=0.1,
                     key=f"{unique_key_prefix}_stamina"
                 )
             with col2:
                 teamwork = st.number_input(
                     f"Teamwork", 
-                    min_value=0.0, max_value=10.0, 
-                    value=float(player["teamwork"]),  # Ensure float type
+                    min_value=1.0, max_value=10.0, 
+                    value=float(5),  # Ensure float type
                     step=0.1,
                     key=f"{unique_key_prefix}_teamwork"
                 )
@@ -276,16 +276,16 @@ def post_match_grading():
             with col3:
                 attacking = st.number_input(
                     f"Attacking", 
-                    min_value=0.0, max_value=10.0, 
-                    value=float(player["attacking"]),  # Ensure float type
+                    min_value=1.0, max_value=10.0, 
+                    value=float(5),  # Ensure float type
                     step=0.1,
                     key=f"{unique_key_prefix}_attacking"
                 )
             with col4:
                 defending = st.number_input(
                     f"Defending", 
-                    min_value=0.0, max_value=10.0, 
-                    value=float(player["defending"]),  # Ensure float type
+                    min_value=1.0, max_value=10.0, 
+                    value=float(5),  # Ensure float type
                     step=0.1,
                     key=f"{unique_key_prefix}_defending"
                 )
