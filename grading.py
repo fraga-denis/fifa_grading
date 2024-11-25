@@ -17,7 +17,7 @@ db = firestore.client()
 
 # Set up default selected week in session state
 if "selected_week" not in st.session_state:
-    st.session_state["selected_week"] = datetime.now().isocalendar()[1]
+    st.session_state["selected_week"] = 47
 
 def get_all_photo_urls():
     """
