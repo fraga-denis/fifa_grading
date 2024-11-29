@@ -15,9 +15,7 @@ if not firebase_admin._apps:
 
 db = firestore.client()
 
-# Set up default selected week in session state
-if "selected_week" not in st.session_state:
-    st.session_state["selected_week"] = datetime.now().isocalendar()[1]-1
+
 
 def get_all_photo_urls():
     """
@@ -66,14 +64,27 @@ def resize_photo_url(photo_url, width, height):
     if len(parts) == 2:
         return f"{parts[0]}/upload/w_{width},h_{height},c_fill/{parts[1]}"
     return photo_url  # Return original URL if transformation fails
-
+def get_available_weeks():
+    try:
+        # Query the matches collection to retrieve distinct weeks
+        matches_ref = db.collection("matches").stream()
+        weeks = {doc.to_dict().get("week") for doc in matches_ref if doc.to_dict().get("week") is not None}
+        return sorted(weeks)  # Return sorted list of unique weeks
+    except Exception as e:
+        st.error(f"Error fetching available weeks: {e}")
+        return []
 # Function to handle week selection with password
+# Password-protected week selection with dynamic week options
 def password_protected_week_selection():
-    if "selected_week" not in st.session_state:
-        st.session_state["selected_week"] = datetime.now().isocalendar()[1]  # Default to the current week
-
     if "week_change_allowed" not in st.session_state:
         st.session_state["week_change_allowed"] = False  # Default to no week change without password
+
+    # Fetch available weeks dynamically
+    available_weeks = get_available_weeks()
+
+    if not available_weeks:
+        st.warning("No available weeks found in the matches database.")
+        return
 
     # Display the currently selected week
     st.subheader(f"Currently Selected Week: {st.session_state['selected_week']}")
@@ -90,13 +101,32 @@ def password_protected_week_selection():
 
         # Allow week selection if the password is correct
         if st.session_state["week_change_allowed"]:
-            available_weeks = list(range(1, 53))  # Allow selection of weeks 1-52
-            selected_week = st.selectbox("Select Week to Grade:", available_weeks, index=st.session_state["selected_week"] - 1)
+            selected_week = st.selectbox(
+                "Select Week to Grade:",
+                available_weeks,
+                index=available_weeks.index(st.session_state["selected_week"]) if st.session_state["selected_week"] in available_weeks else 0
+            )
             if st.button("Update Week"):
                 st.session_state["selected_week"] = selected_week
                 st.session_state["week_change_allowed"] = False  # Lock week change after update
                 st.success(f"Week updated to {selected_week}. To change again, enter the password.")
+# Adjust the logic to set a default selected week only from available weeks
+if "selected_week" not in st.session_state:
+    available_weeks = get_available_weeks()
+    today = datetime.now()
+    iso_week_number = today.isocalendar()[1]
+    iso_weekday = today.isocalendar()[2]  # Monday=1, Sunday=7
 
+    # Adjust default week logic based on the day of the week
+    if iso_weekday in [5, 6, 7]:  # Friday (5) to Monday (1)
+        default_week = iso_week_number
+    else:
+        default_week = iso_week_number - 1
+
+    # Set the default selected week to a valid week from the database
+    st.session_state["selected_week"] = (
+        default_week if default_week in available_weeks else available_weeks[0] if available_weeks else 1
+    )
 
 def load_match_players(week_number):
     try:
