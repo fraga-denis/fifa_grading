@@ -289,6 +289,7 @@ def post_match_grading():
                     f"Stamina (from 1 to 10)", 
                     min_value=1, max_value=10, 
                     value=5,  # Default value
+                    step=0.5,   # Step size for finer control
                     key=f"{unique_key_prefix}_stamina"
                 )
             with col2:
@@ -296,6 +297,7 @@ def post_match_grading():
                     f"Teamwork", 
                     min_value=1, max_value=10, 
                     value=5,  # Default value
+                    step=0.5,   # Step size for finer control
                     key=f"{unique_key_prefix}_teamwork"
                 )
             
@@ -306,6 +308,7 @@ def post_match_grading():
                     f"Attacking", 
                     min_value=1, max_value=10, 
                     value=5,  # Default value
+                    step=0.5,   # Step size for finer control
                     key=f"{unique_key_prefix}_attacking"
                 )
             with col4:
@@ -313,6 +316,7 @@ def post_match_grading():
                     f"Defending", 
                     min_value=1, max_value=10, 
                     value=5,  # Default value
+                    step=0.5,   # Step size for finer control
                     key=f"{unique_key_prefix}_defending"
                 )
 
