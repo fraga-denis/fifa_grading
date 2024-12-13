@@ -285,38 +285,34 @@ def post_match_grading():
 
             col1, col2 = st.columns(2)
             with col1:
-                stamina = st.number_input(
+                stamina = st.slider(
                     f"Stamina (from 1 to 10)", 
-                    min_value=1.0, max_value=10.0, 
-                    value=float(5),  # Ensure float type
-                    step=0.1,
+                    min_value=1, max_value=10, 
+                    value=5,  # Default value
                     key=f"{unique_key_prefix}_stamina"
                 )
             with col2:
-                teamwork = st.number_input(
+                teamwork = st.slider(
                     f"Teamwork", 
-                    min_value=1.0, max_value=10.0, 
-                    value=float(5),  # Ensure float type
-                    step=0.1,
+                    min_value=1, max_value=10, 
+                    value=5,  # Default value
                     key=f"{unique_key_prefix}_teamwork"
                 )
-
+            
             # Add attacking and defending fields side by side
             col3, col4 = st.columns(2)
             with col3:
-                attacking = st.number_input(
+                attacking = st.slider(
                     f"Attacking", 
-                    min_value=1.0, max_value=10.0, 
-                    value=float(5),  # Ensure float type
-                    step=0.1,
+                    min_value=1, max_value=10, 
+                    value=5,  # Default value
                     key=f"{unique_key_prefix}_attacking"
                 )
             with col4:
-                defending = st.number_input(
+                defending = st.slider(
                     f"Defending", 
-                    min_value=1.0, max_value=10.0, 
-                    value=float(5),  # Ensure float type
-                    step=0.1,
+                    min_value=1, max_value=10, 
+                    value=5,  # Default value
                     key=f"{unique_key_prefix}_defending"
                 )
 
