@@ -264,9 +264,9 @@ def post_match_grading():
 
     # Create a single form for grading
     with st.form("Grading Form"):
-        for player in players:
-            # Show player details
-            st.subheader(player["name"])
+        for i, player in enumerate(players):
+        st.subheader(player["name"])for player in players:
+
 
             # Display the photo with a fixed size, centralized
             photo_url = player.get("photo", "")
@@ -281,44 +281,44 @@ def post_match_grading():
                 st.warning(f"No photo available for {player['name']}")
 
             # Unique keys for input fields
-            unique_key_prefix = f"{player['id']}_{player['name']}"
+            unique_key_prefix = f"{player['id']}_{player['name']}_{i}"
 
             col1, col2 = st.columns(2)
             with col1:
                 stamina = st.slider(
-                    f"Stamina (from 1 to 10)", 
-                    min_value=1.0, max_value=10.0, 
-                    value=5.0,  # Default value
-                    step=0.5,   # Step size of 0.5
+                    "Stamina (from 1 to 10)",
+                    min_value=1.0, max_value=10.0,
+                    value=5.0,
+                    step=0.5,
                     key=f"{unique_key_prefix}_stamina"
                 )
             with col2:
                 teamwork = st.slider(
-                    f"Teamwork", 
-                    min_value=1.0, max_value=10.0, 
-                    value=5.0,  # Default value
-                    step=0.5,   # Step size of 0.5
+                    "Teamwork",
+                    min_value=1.0, max_value=10.0,
+                    value=5.0,
+                    step=0.5,
                     key=f"{unique_key_prefix}_teamwork"
                 )
-            
-            # Add attacking and defending fields side by side
+    
             col3, col4 = st.columns(2)
             with col3:
                 attacking = st.slider(
-                    f"Attacking", 
-                    min_value=1.0, max_value=10.0, 
-                    value=5.0,  # Default value
-                    step=0.5,   # Step size of 0.5
+                    "Attacking",
+                    min_value=1.0, max_value=10.0,
+                    value=5.0,
+                    step=0.5,
                     key=f"{unique_key_prefix}_attacking"
                 )
             with col4:
                 defending = st.slider(
-                    f"Defending", 
-                    min_value=1.0, max_value=10.0, 
-                    value=5.0,  # Default value
-                    step=0.5,   # Step size of 0.5
+                    "Defending",
+                    min_value=1.0, max_value=10.0,
+                    value=5.0,
+                    step=0.5,
                     key=f"{unique_key_prefix}_defending"
                 )
+           
 
             # Add a text area for qualitative feedback
             qualitative = st.text_area(
