@@ -265,7 +265,7 @@ def post_match_grading():
     # Create a single form for grading
     with st.form("Grading Form"):
         for i, player in enumerate(players):
-        st.subheader(player["name"])for player in players:
+            st.subheader(player["name"])for player in players:
 
 
             # Display the photo with a fixed size, centralized
