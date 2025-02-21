@@ -269,75 +269,75 @@ def post_match_grading():
             for player in players:
 
 
-            # Display the photo with a fixed size, centralized
-            photo_url = player.get("photo", "")
-            if photo_url:
-                try:
-                    col_image, _, _ = st.columns([2, 1, 1])  # First column wider
-                    with col_image:
-                        st.image(photo_url, caption=player["name"], width=225)
-                except Exception as e:
-                    st.warning(f"Cannot load photo for {player['name']}: {e}")
-            else:
-                st.warning(f"No photo available for {player['name']}")
-
-            # Unique keys for input fields
-            unique_key_prefix = f"{player['id']}_{player['name']}_{i}"
-
-            col1, col2 = st.columns(2)
-            with col1:
-                stamina = st.slider(
-                    "Stamina (from 1 to 10)",
-                    min_value=1.0, max_value=10.0,
-                    value=5.0,
-                    step=0.5,
-                    key=f"{unique_key_prefix}_stamina"
-                )
-            with col2:
-                teamwork = st.slider(
-                    "Teamwork",
-                    min_value=1.0, max_value=10.0,
-                    value=5.0,
-                    step=0.5,
-                    key=f"{unique_key_prefix}_teamwork"
+                # Display the photo with a fixed size, centralized
+                photo_url = player.get("photo", "")
+                if photo_url:
+                    try:
+                        col_image, _, _ = st.columns([2, 1, 1])  # First column wider
+                        with col_image:
+                            st.image(photo_url, caption=player["name"], width=225)
+                    except Exception as e:
+                        st.warning(f"Cannot load photo for {player['name']}: {e}")
+                else:
+                    st.warning(f"No photo available for {player['name']}")
+    
+                # Unique keys for input fields
+                unique_key_prefix = f"{player['id']}_{player['name']}_{i}"
+    
+                col1, col2 = st.columns(2)
+                with col1:
+                    stamina = st.slider(
+                        "Stamina (from 1 to 10)",
+                        min_value=1.0, max_value=10.0,
+                        value=5.0,
+                        step=0.5,
+                        key=f"{unique_key_prefix}_stamina"
+                    )
+                with col2:
+                    teamwork = st.slider(
+                        "Teamwork",
+                        min_value=1.0, max_value=10.0,
+                        value=5.0,
+                        step=0.5,
+                        key=f"{unique_key_prefix}_teamwork"
+                    )
+        
+                col3, col4 = st.columns(2)
+                with col3:
+                    attacking = st.slider(
+                        "Attacking",
+                        min_value=1.0, max_value=10.0,
+                        value=5.0,
+                        step=0.5,
+                        key=f"{unique_key_prefix}_attacking"
+                    )
+                with col4:
+                    defending = st.slider(
+                        "Defending",
+                        min_value=1.0, max_value=10.0,
+                        value=5.0,
+                        step=0.5,
+                        key=f"{unique_key_prefix}_defending"
+                    )
+               
+    
+                # Add a text area for qualitative feedback
+                qualitative = st.text_area(
+                    f"Qualitative Feedback ({player['name']})",
+                    value="",
+                    key=f"{unique_key_prefix}_qualitative"
                 )
     
-            col3, col4 = st.columns(2)
-            with col3:
-                attacking = st.slider(
-                    "Attacking",
-                    min_value=1.0, max_value=10.0,
-                    value=5.0,
-                    step=0.5,
-                    key=f"{unique_key_prefix}_attacking"
-                )
-            with col4:
-                defending = st.slider(
-                    "Defending",
-                    min_value=1.0, max_value=10.0,
-                    value=5.0,
-                    step=0.5,
-                    key=f"{unique_key_prefix}_defending"
-                )
-           
-
-            # Add a text area for qualitative feedback
-            qualitative = st.text_area(
-                f"Qualitative Feedback ({player['name']})",
-                value="",
-                key=f"{unique_key_prefix}_qualitative"
-            )
-
-            # Append the grading data
-            grading_data.append({
-                "id": player["id"],
-                "name": player["name"],
-                "stamina": stamina,
-                "teamwork": teamwork,
-                "attacking": attacking,
-                "defending": defending,
-                "qualitative": qualitative,
-            })
+                # Append the grading data
+                grading_data.append({
+                    "id": player["id"],
+                    "name": player["name"],
+                    "stamina": stamina,
+                    "teamwork": teamwork,
+                    "attacking": attacking,
+                    "defending": defending,
+                    "qualitative": qualitative,
+                })
 
         # Add match balance question
         match_balance = st.radio(
