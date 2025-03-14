@@ -73,43 +73,7 @@ def get_available_weeks():
     except Exception as e:
         st.error(f"Error fetching available weeks: {e}")
         return []
-# Function to handle week selection with password
-# Password-protected week selection with dynamic week options
-def password_protected_week_selection():
-    if "week_change_allowed" not in st.session_state:
-        st.session_state["week_change_allowed"] = False  # Default to no week change without password
 
-    # Fetch available weeks dynamically
-    available_weeks = get_available_weeks()
-
-    if not available_weeks:
-        st.warning("No available weeks found in the matches database.")
-        return
-
-    # Display the currently selected week
-    st.subheader(f"Currently Selected Week: {st.session_state['selected_week']}")
-
-    # Check for password to allow week change
-    with st.expander("Admin: Update Selected Week"):
-        if not st.session_state["week_change_allowed"]:
-            password = st.text_input("Enter Password:", type="password")
-            if password == "almighty":  # Change the password to your desired value
-                st.session_state["week_change_allowed"] = True
-                st.success("Access granted. You can now update the week.")
-            else:
-                st.warning("Enter the correct password to unlock week selection.")
-
-        # Allow week selection if the password is correct
-        if st.session_state["week_change_allowed"]:
-            selected_week = st.selectbox(
-                "Select Week to Grade:",
-                available_weeks,
-                index=available_weeks.index(st.session_state["selected_week"]) if st.session_state["selected_week"] in available_weeks else 0
-            )
-            if st.button("Update Week"):
-                st.session_state["selected_week"] = selected_week
-                st.session_state["week_change_allowed"] = False  # Lock week change after update
-                st.success(f"Week updated to {selected_week}. To change again, enter the password.")
 # Adjust the logic to set a default selected week only from available weeks
 if "selected_week" not in st.session_state:
     available_weeks = get_available_weeks()
@@ -123,10 +87,13 @@ if "selected_week" not in st.session_state:
     else:
         default_week = iso_week_number - 1
 
-    # Set the default selected week to a valid week from the database
-    st.session_state["selected_week"] = (
-        default_week if default_week in available_weeks else available_weeks[0] if available_weeks else 1
-    )
+    # Check if the selected default week exists in available weeks
+    if default_week in available_weeks:
+        st.session_state["selected_week"] = default_week
+    elif available_weeks:  # If there are weeks available, but not the expected one
+        st.session_state["selected_week"] = available_weeks[-1]  # Pick the most recent valid week
+    else:
+        st.session_state["selected_week"] = None  # No valid week found
 
 def load_match_players(week_number):
     try:
@@ -250,7 +217,12 @@ def post_match_grading():
     st.header("Post-Match Grading")
 
     # Use the selected week from session state
-    week_number = st.session_state["selected_week"]
+    week_number = st.session_state.get("selected_week", None)
+
+    if week_number is None:
+        st.warning("No match available for grading.")
+        return
+
     st.write(f"Grading for Week: {week_number}")
 
     # Load players for the current match
@@ -381,8 +353,7 @@ def main():
 
     # Automatically update grades collection with player IDs from matches
     update_grades_with_player_id()
-    # Password-protected week selection
-    password_protected_week_selection()
+
 
 if __name__ == "__main__":
     main()
