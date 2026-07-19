@@ -2,8 +2,6 @@ import streamlit as st
 import firebase_admin
 from firebase_admin import credentials, firestore
 from datetime import datetime
-import cloudinary
-import cloudinary.api
 
 
 # Load Firebase credentials from Streamlit secrets
@@ -17,36 +15,6 @@ db = firestore.client()
 
 
 
-def get_all_photo_urls():
-    """
-    Fetch all photo URLs from Cloudinary and adjust `public_id` to match `player_id`.
-    
-    Returns:
-        dict: A dictionary with adjusted `public_id` (matching `player_id`) as keys and `secure_url` as values.
-    """
-    # Access Cloudinary credentials from Streamlit secrets
-    cloudinary_key = st.secrets["cloudinary"]
-
-    # Configure Cloudinary
-    cloudinary.config(
-        cloud_name=cloudinary_key["cloud_name"],
-        api_key=cloudinary_key["api_key"],
-        api_secret=cloudinary_key["api_secret"]
-    )
-    
-    try:
-        # Fetch all uploaded resources
-        response = cloudinary.api.resources(
-            type="upload",  # Fetch resources uploaded directly
-            max_results=500  # Adjust as needed
-        )
-        # Adjust `public_id` to match `player_id` by stripping everything after '_'
-        photo_map = {resource["public_id"].split('_')[0]: resource["secure_url"] for resource in response["resources"]}
-        return photo_map
-    except Exception as e:
-        print(f"Error fetching photo URLs: {e}")
-        return {}
-        
 def resize_photo_url(photo_url, width, height):
     """
     Resize a Cloudinary photo URL to the specified dimensions.
@@ -100,17 +68,13 @@ def load_match_players(week_number):
         # Fetch match data for the given week
         matches_ref = db.collection("matches").where("week", "==", week_number)
         match_docs = matches_ref.stream()
-        
-        # Fetch adjusted photo URLs from Cloudinary
-        photo_map = get_all_photo_urls()
 
         player_data = []
         for match in match_docs:
             match_dict = match.to_dict()
             player_id = match_dict.get("player_id", "")
-            
-            # Match `player_id` directly to the adjusted `public_id`
-            photo_url = photo_map.get(player_id, "https://via.placeholder.com/150?text=No+Photo")
+
+            photo_url = match_dict.get("photo") or "https://via.placeholder.com/150?text=No+Photo"
             
             # Calculate starting values from matches (times 2)
             stamina = match_dict.get("stamina", 0) * 2
