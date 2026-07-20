@@ -74,7 +74,9 @@ def load_match_players(week_number):
             match_dict = match.to_dict()
             player_id = match_dict.get("player_id", "")
 
-            photo_url = match_dict.get("photo") or "https://via.placeholder.com/150?text=No+Photo"
+            photo_url = match_dict.get("photo")
+            if not isinstance(photo_url, str) or not photo_url.strip():
+                photo_url = "https://placehold.co/150x150?text=No+Photo"
             
             # Calculate starting values from matches (times 2)
             stamina = match_dict.get("stamina", 0) * 2
