@@ -1,7 +1,7 @@
 import streamlit as st
 import firebase_admin
 from firebase_admin import credentials, firestore
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 # Load Firebase credentials from Streamlit secrets
@@ -32,12 +32,29 @@ def resize_photo_url(photo_url, width, height):
     if len(parts) == 2:
         return f"{parts[0]}/upload/w_{width},h_{height},c_fill/{parts[1]}"
     return photo_url  # Return original URL if transformation fails
+# A match week is identified by (ISO year, ISO week). Documents store both a
+# "year" and a "week" field; querying on the week number alone mixed in last
+# year's matches for the same week number.
+
+def week_label(yw):
+    return f"{yw[0]} · week {yw[1]}"
+
+
+def where_week(collection_ref, yw):
+    """Filter a Firestore collection/query on both year and week."""
+    return collection_ref.where("week", "==", yw[1]).where("year", "==", yw[0])
+
+
 def get_available_weeks():
     try:
-        # Query the matches collection to retrieve distinct weeks
+        # Query the matches collection to retrieve distinct (year, week) pairs
         matches_ref = db.collection("matches").stream()
-        weeks = {doc.to_dict().get("week") for doc in matches_ref if doc.to_dict().get("week") is not None}
-        return sorted(weeks)  # Return sorted list of unique weeks
+        weeks = set()
+        for doc in matches_ref:
+            d = doc.to_dict()
+            if d.get("week") is not None and d.get("year") is not None:
+                weeks.add((int(d["year"]), int(d["week"])))
+        return sorted(weeks)  # Oldest first; last item is the most recent
     except Exception as e:
         st.error(f"Error fetching available weeks: {e}")
         return []
@@ -46,14 +63,12 @@ def get_available_weeks():
 if "selected_week" not in st.session_state:
     available_weeks = get_available_weeks()
     today = datetime.now()
-    iso_week_number = today.isocalendar()[1]
-    iso_weekday = today.isocalendar()[2]  # Monday=1, Sunday=7
 
-    # Adjust default week logic based on the day of the week
-    if iso_weekday in [5, 6, 7]:  # Friday (5) to Monday (1)
-        default_week = iso_week_number
-    else:
-        default_week = iso_week_number - 1
+    # Friday to Sunday: grade this week's match; Monday to Thursday: last week's.
+    # Going back 7 days by date (not week - 1) handles New Year and 53-week years.
+    target_day = today if today.isoweekday() in [5, 6, 7] else today - timedelta(days=7)
+    target_iso = target_day.isocalendar()
+    default_week = (target_iso[0], target_iso[1])
 
     # Check if the selected default week exists in available weeks
     if default_week in available_weeks:
@@ -64,9 +79,10 @@ if "selected_week" not in st.session_state:
         st.session_state["selected_week"] = None  # No valid week found
 
 def load_match_players(week_number):
+    """week_number is a (year, week) tuple."""
     try:
-        # Fetch match data for the given week
-        matches_ref = db.collection("matches").where("week", "==", week_number)
+        # Fetch match data for the given year + week
+        matches_ref = where_week(db.collection("matches"), week_number)
         match_docs = matches_ref.stream()
 
         player_data = []
@@ -114,7 +130,8 @@ def save_grades(week_number, grading_data):
         for grade in grading_data:
             # Save each player's grades along with match balance
             db.collection("grades").add({
-                "week": week_number,
+                "year": week_number[0],
+                "week": week_number[1],
                 "player_id": grade["id"],  # Ensure player_id is saved
                 "player_name": grade["name"],
                 "stamina": grade["stamina"],
@@ -136,8 +153,9 @@ def save_match_balance(week_number, match_balance):
     """
     try:
         # Save or update the match balance feedback for the given week in the new collection
-        db.collection("match_balance").document(f"week_{week_number}").set({
-            "week": week_number,
+        db.collection("match_balance").document(f"{week_number[0]}_week_{week_number[1]}").set({
+            "year": week_number[0],
+            "week": week_number[1],
             "match_balance": match_balance
         })
         st.success("Match balance feedback saved successfully in 'match_balance' collection!")
@@ -159,9 +177,12 @@ def update_grades_with_player_id():
                 # If player_id is missing, get the player_id from the matches collection
                 player_name = grade_data.get("player_name", "")
                 week = grade_data.get("week", "")
+                year = grade_data.get("year")
+                if year is None:
+                    continue  # Can't safely match a record without a year
 
                 # Find the matching player in the 'matches' collection
-                matches_ref = db.collection("matches").where("week", "==", week).where("player_name", "==", player_name).stream()
+                matches_ref = where_week(db.collection("matches"), (year, week)).where("player_name", "==", player_name).stream()
                 for match in matches_ref:
                     match_data = match.to_dict()
                     if "player_id" in match_data:
@@ -189,7 +210,7 @@ def post_match_grading():
         st.warning("No match available for grading.")
         return
 
-    st.write(f"Grading for Week: {week_number}")
+    st.write(f"Grading for Week: {week_label(week_number)}")
 
     # Load players for the current match
     players = load_match_players(week_number)
@@ -303,7 +324,8 @@ def save_match_balance(week_number, match_balance):
     try:
         # Add a new entry for the match balance feedback
         db.collection("match_balance").add({
-            "week": week_number,
+            "year": week_number[0],
+            "week": week_number[1],
             "match_balance": match_balance,
             "submitted_at": datetime.now()  # Add a timestamp for each submission
         })
